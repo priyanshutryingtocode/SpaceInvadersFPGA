@@ -1,365 +1,369 @@
-module vgacontroller(rst, clk,btnR,btnL,fire,startbtn, VGA_R, VGA_G, VGA_B,VGA_hSync, VGA_vSync);
-input rst, clk;
-input btnL,btnR,fire,startbtn;
-wire cleanL,cleanR,cleanfire;
-wire pulseL,pulseR,pulsefire,truepulseL,truepulseR;
-output reg [3:0] VGA_R,VGA_G,VGA_B;
-output VGA_hSync,VGA_vSync;
-wire speaker;
-wire [9:0]haddr;
-wire [8:0]vaddr;
-wire [9:0]spaceshipX;
-wire [8:0]spaceshipY;
-wire [9:0]rocketX,alienrocketX1,alienrocketX2,alienrocketX3,alienrocketX4,alienrocketX5,alienrocketX6;
-wire [8:0]rocketY,alienrocketY1,alienrocketY2,alienrocketY3,alienrocketY4,alienrocketY5,alienrocketY6;
-wire [9:0]alien_addr;
-wire [9:0]alienX1,alienX2,alienX3,alienX4,alienX5;
-wire [8:0]alienY1,alienY2,alienY3,alienY4,alienY5;
-wire [9:0]alien2X1,alien2X2,alien2X3,alien2X4,alien2X5;
-wire [8:0]alien2Y1,alien2Y2,alien2Y3,alien2Y4,alien2Y5;
-wire [9:0]alien3X1,alien3X2,alien3X3,alien3X4,alien3X5;
-wire [8:0]alien3Y1,alien3Y2,alien3Y3,alien3Y4,alien3Y5;
-reg [8:0]space_addr,life_addr;
-wire [8:0]ship_addr;
-wire [7:0]space_dout;
-reg [9:0]alien_addr1,alien_addr2,alien_addr3,alien_addr4,alien_addr5;
-reg [9:0]alien_addr6,alien_addr7,alien_addr8,alien_addr9,alien_addr10;
-reg [9:0]alien_addr11,alien_addr12,alien_addr13,alien_addr14,alien_addr15;
-wire [7:0]alien_dout,alien2_dout,alien3_dout;
-wire rocketflying,alien1border,alien2border,alien3border,hit,gameover,truefire,hitrocket;
-wire alienrocketflying1,alienrocketflying2,alienrocketflying3,alienrocketflying4,alienrocketflying5,alienrocketflying6;
-wire alienfire1,alienfire2,alienfire3,alienfire4,alienfire5,alienfire6;
-wire alienalive1,alienalive2,alienalive3,alienalive4,alienalive5;
-wire alienalive6,alienalive7,alienalive8,alienalive9,alienalive10;
-wire alienalive11,alienalive12,alienalive13,alienalive14,alienalive15;
-wire alienhit,liveminus;
-wire hit1,hit2,hit3,hit4,hit5;
-wire hit6,hit7,hit8,hit9,hit10;
-wire hit11,hit12,hit13,hit14,hit15;
-wire totalgameover;
-reg livesgameover;
-reg [2:0] R,G,B;
-reg border,shipborder,scoreborder,rocketborder,gameoverborder,startborder,scorecase,startscreen,winscreen,winborder,lifeborder;
-reg alienborder1,alienborder2,alienborder3,alienborder4,alienborder5;
-reg alienborder6,alienborder7,alienborder8,alienborder9,alienborder10;
-reg alienborder11,alienborder12,alienborder13,alienborder14,alienborder15;
-reg alienrocketborder1,alienrocketborder2,alienrocketborder3,alienrocketborder4,alienrocketborder5,alienrocketborder6;
-wire Xdisplay,Ydisplay;
-reg [18:0]backgroundaddr;
-reg [14:0]gameoveraddr;
-reg [16:0]startaddr;
-reg [16:0]winaddr;
-wire [7:0]background,gameoverimg,startimg,winimg;
-reg CLK_25,CLK_50;
-reg [6:0] points;
-reg [2:0] lives;
+module vgacontroller(rst, clk, btnR, btnL, fire, startbtn, VGA_R, VGA_G, VGA_B, VGA_hSync, VGA_vSync, seg, an);
+    input rst, clk;
+    input btnL, btnR, fire, startbtn;
+    output reg [3:0] VGA_R, VGA_G, VGA_B;
+    output VGA_hSync, VGA_vSync;
+    
+    // 7-Segment Display Outputs
+    output [6:0] seg;
+    output reg [3:0] an;
 
-debounce DBL(rst,clk,btnL,cleanL);
-debounce DBR(rst,clk,btnR,cleanR);
-debounce DBF(rst,clk,fire,cleanfire);
-spaceship SHIP(spaceshipX,spaceshipY,truepulseL,truepulseR,CLK_25,rst,
-    alienrocketX1,alienrocketY1,
-    alienrocketX2,alienrocketY2,
-    alienrocketX3,alienrocketY3,
-    alienrocketX4,alienrocketY4,
-    alienrocketX5,alienrocketY5,
-    alienrocketX6,alienrocketY6,
-    alienrocketflying1,alienrocketflying2,
-    alienrocketflying3,alienrocketflying4,
-    alienrocketflying5,alienrocketflying6,
-    alienhit,liveminus
-    );
+    wire cleanL, cleanR, cleanfire;
+    wire pulseL, pulseR, pulsefire, truepulseL, truepulseR;
+    wire speaker;
+    wire [9:0] haddr;
+    wire [8:0] vaddr;
+    wire [9:0] spaceshipX;
+    wire [8:0] spaceshipY;
+    wire [9:0] rocketX, alienrocketX1, alienrocketX2, alienrocketX3, alienrocketX4, alienrocketX5, alienrocketX6;
+    wire [8:0] rocketY, alienrocketY1, alienrocketY2, alienrocketY3, alienrocketY4, alienrocketY5, alienrocketY6;
+    wire [9:0] alien_addr;
+    wire [9:0] alienX1, alienX2, alienX3, alienX4, alienX5;
+    wire [8:0] alienY1, alienY2, alienY3, alienY4, alienY5;
+    wire [9:0] alien2X1, alien2X2, alien2X3, alien2X4, alien2X5;
+    wire [8:0] alien2Y1, alien2Y2, alien2Y3, alien2Y4, alien2Y5;
+    wire [9:0] alien3X1, alien3X2, alien3X3, alien3X4, alien3X5;
+    wire [8:0] alien3Y1, alien3Y2, alien3Y3, alien3Y4, alien3Y5;
+    reg [8:0] space_addr, life_addr;
+    wire [8:0] ship_addr;
+    wire [7:0] space_dout;
+    reg [9:0] alien_addr1, alien_addr2, alien_addr3, alien_addr4, alien_addr5;
+    reg [9:0] alien_addr6, alien_addr7, alien_addr8, alien_addr9, alien_addr10;
+    reg [9:0] alien_addr11, alien_addr12, alien_addr13, alien_addr14, alien_addr15;
+    wire [7:0] alien_dout, alien2_dout, alien3_dout;
+    wire rocketflying, alien1border, alien2border, alien3border, hit, gameover, truefire, hitrocket;
+    wire alienrocketflying1, alienrocketflying2, alienrocketflying3, alienrocketflying4, alienrocketflying5, alienrocketflying6;
+    wire alienfire1, alienfire2, alienfire3, alienfire4, alienfire5, alienfire6;
+    wire alienalive1, alienalive2, alienalive3, alienalive4, alienalive5;
+    wire alienalive6, alienalive7, alienalive8, alienalive9, alienalive10;
+    wire alienalive11, alienalive12, alienalive13, alienalive14, alienalive15;
+    wire alienhit, liveminus;
+    wire hit1, hit2, hit3, hit4, hit5;
+    wire hit6, hit7, hit8, hit9, hit10;
+    wire hit11, hit12, hit13, hit14, hit15;
+    wire totalgameover;
+    reg livesgameover;
+    reg [2:0] R, G, B;
+    reg border, shipborder, scoreborder, rocketborder, gameoverborder, startborder, scorecase, startscreen, winscreen, winborder, lifeborder;
+    reg alienborder1, alienborder2, alienborder3, alienborder4, alienborder5;
+    reg alienborder6, alienborder7, alienborder8, alienborder9, alienborder10;
+    reg alienborder11, alienborder12, alienborder13, alienborder14, alienborder15;
+    reg alienrocketborder1, alienrocketborder2, alienrocketborder3, alienrocketborder4, alienrocketborder5, alienrocketborder6;
+    wire Xdisplay, Ydisplay;
+    reg [18:0] backgroundaddr;
+    reg [14:0] gameoveraddr;
+    reg [16:0] startaddr;
+    reg [16:0] winaddr;
+    wire [7:0] background, gameoverimg, startimg, winimg;
+    reg CLK_25, CLK_50;
+    reg [6:0] points;
+    reg [2:0] lives;
 
-rocket RKTSHIP(CLK_25,rst,spaceshipX,spaceshipY,
-    rocketX,rocketY,
-    alienrocketX1,alienrocketY1,
-    alienrocketX2,alienrocketY2,
-    alienrocketX3,alienrocketY3,
-    alienrocketX4,alienrocketY4,
-    alienrocketX5,alienrocketY5,
-    alienrocketX6,alienrocketY6,
-    alienrocketflying1,alienrocketflying2,
-    alienrocketflying3,alienrocketflying4,
-    alienrocketflying5,alienrocketflying6,
-    1,truefire,rocketflying,hit);
+    reg [3:0] bcd_tens, bcd_ones;
+    always @(*) begin
+        if (points >= 90) begin bcd_tens = 9; bcd_ones = points - 90; end
+        else if (points >= 80) begin bcd_tens = 8; bcd_ones = points - 80; end
+        else if (points >= 70) begin bcd_tens = 7; bcd_ones = points - 70; end
+        else if (points >= 60) begin bcd_tens = 6; bcd_ones = points - 60; end
+        else if (points >= 50) begin bcd_tens = 5; bcd_ones = points - 50; end
+        else if (points >= 40) begin bcd_tens = 4; bcd_ones = points - 40; end
+        else if (points >= 30) begin bcd_tens = 3; bcd_ones = points - 30; end
+        else if (points >= 20) begin bcd_tens = 2; bcd_ones = points - 20; end
+        else if (points >= 10) begin bcd_tens = 1; bcd_ones = points - 10; end
+        else begin bcd_tens = 0; bcd_ones = points[3:0]; end
+    end
 
-rocket ALIENRKT1(CLK_25,rst,alienX1,alienY1,alienrocketX1,alienrocketY1,rocketX,rocketY,0,0,0,0,0,0,0,0,0,0,rocketflying,0,0,0,0,0,0,alienfire1,alienrocketflying1,alienhit);
-rocket ALIENRKT2(CLK_25,rst,alienX5,alienY5,alienrocketX2,alienrocketY2,rocketX,rocketY,0,0,0,0,0,0,0,0,0,0,rocketflying,0,0,0,0,0,0,alienfire2,alienrocketflying2,alienhit);
-rocket ALIENRKT3(CLK_25,rst,alien2X2,alien2Y2,alienrocketX3,alienrocketY3,rocketX,rocketY,0,0,0,0,0,0,0,0,0,0,rocketflying,0,0,0,0,0,0,alienfire3,alienrocketflying3,alienhit);
-rocket ALIENRKT4(CLK_25,rst,alien2X4,alien2Y4,alienrocketX4,alienrocketY4,rocketX,rocketY,0,0,0,0,0,0,0,0,0,0,rocketflying,0,0,0,0,0,0,alienfire4,alienrocketflying4,alienhit);
-rocket ALIENRKT5(CLK_25,rst,alien3X2,alien3Y2,alienrocketX5,alienrocketY5,rocketX,rocketY,0,0,0,0,0,0,0,0,0,0,rocketflying,0,0,0,0,0,0,alienfire5,alienrocketflying5,alienhit);
-rocket ALIENRKT6(CLK_25,rst,alien3X4,alien3Y4,alienrocketX6,alienrocketY6,rocketX,rocketY,0,0,0,0,0,0,0,0,0,0,rocketflying,0,0,0,0,0,0,alienfire6,alienrocketflying6,alienhit);
+    reg [19:0] refresh_counter; 
+    always @(posedge clk or posedge rst) begin
+        if (rst) refresh_counter <= 0;
+        else refresh_counter <= refresh_counter + 1;
+    end
+    
+    wire [1:0] led_activation = refresh_counter[19:18];
+    reg [3:0] LED_BCD;
 
-speaker SND(CLK_25,speaker,hit,alienhit);
+    always @(*) begin
+        case(led_activation)
+            2'b00: begin an = 4'b1110; LED_BCD = bcd_ones; end 
+            2'b01: begin an = 4'b1101; LED_BCD = bcd_tens; end 
+            2'b10: begin an = 4'b1011; LED_BCD = 4'hF; end     
+            2'b11: begin an = 4'b0111; LED_BCD = 4'hF; end     
+        endcase
+        if (led_activation == 2'b01 && bcd_tens == 0) LED_BCD = 4'hF; 
+    end
 
-alien ALN1(CLK_25,rst,500,150,alienX1,alienY1,30,alienalive1,rocketflying,rocketX,rocketY,hit1,alienfire1,100000000,0,startscreen,gameover);
-alien ALN2(CLK_25,rst,430,150,alienX2,alienY2,30,alienalive2,rocketflying,rocketX,rocketY,hit2,0,150000000,0,startscreen,gameover);
-alien ALN3(CLK_25,rst,360,150,alienX3,alienY3,30,alienalive3,rocketflying,rocketX,rocketY,hit3,0,150000000,0,startscreen,gameover);
-alien ALN4(CLK_25,rst,290,150,alienX4,alienY4,30,alienalive4,rocketflying,rocketX,rocketY,hit4,0,150000000,0,startscreen,gameover);
-alien ALN5(CLK_25,rst,220,150,alienX5,alienY5,30,alienalive5,rocketflying,rocketX,rocketY,hit5,alienfire2,100000000,0,startscreen,gameover);
+    reg [6:0] seg_reg;
+    always @(*) begin
+        case(LED_BCD)
+            4'h0: seg_reg = 7'b0000001; // 0
+            4'h1: seg_reg = 7'b1001111; // 1
+            4'h2: seg_reg = 7'b0010010; // 2
+            4'h3: seg_reg = 7'b0000110; // 3
+            4'h4: seg_reg = 7'b1001100; // 4
+            4'h5: seg_reg = 7'b0100100; // 5
+            4'h6: seg_reg = 7'b0100000; // 6
+            4'h7: seg_reg = 7'b0001111; // 7
+            4'h8: seg_reg = 7'b0000000; // 8
+            4'h9: seg_reg = 7'b0000100; // 9
+            4'hF: seg_reg = 7'b1111111; // Display Off
+            default: seg_reg = 7'b1111111;
+        endcase
+    end
+    assign seg = seg_reg;
 
-alien ALN6(CLK_25,rst,500,98,alien2X1,alien2Y1,30,alienalive6,rocketflying,rocketX,rocketY,hit6,0,150000000,0,startscreen,gameover);
-alien ALN7(CLK_25,rst,430,98,alien2X2,alien2Y2,30,alienalive7,rocketflying,rocketX,rocketY,hit7,alienfire3,100000000,alienalive2,startscreen,gameover);
-alien ALN8(CLK_25,rst,360,98,alien2X3,alien2Y3,30,alienalive8,rocketflying,rocketX,rocketY,hit8,0,150000000,0,startscreen,gameover);
-alien ALN9(CLK_25,rst,290,98,alien2X4,alien2Y4,30,alienalive9,rocketflying,rocketX,rocketY,hit9,alienfire4,100000000,alienalive4,startscreen,gameover);
-alien ALN10(CLK_25,rst,220,98,alien2X5,alien2Y5,30,alienalive10,rocketflying,rocketX,rocketY,hit10,0,150000000,0,startscreen,gameover);
+    debounce DBL(rst, clk, btnL, cleanL);
+    debounce DBR(rst, clk, btnR, cleanR);
+    debounce DBF(rst, clk, fire, cleanfire);
+    
+    spaceship SHIP(spaceshipX, spaceshipY, truepulseL, truepulseR, CLK_25, rst,
+        alienrocketX1, alienrocketY1, alienrocketX2, alienrocketY2, alienrocketX3, alienrocketY3,
+        alienrocketX4, alienrocketY4, alienrocketX5, alienrocketY5, alienrocketX6, alienrocketY6,
+        alienrocketflying1, alienrocketflying2, alienrocketflying3, alienrocketflying4,
+        alienrocketflying5, alienrocketflying6, alienhit, liveminus);
 
-alien ALN11(CLK_25,rst,500,50,alien3X1,alien3Y1,30,alienalive11,rocketflying,rocketX,rocketY,hit11,0,150000000,0,startscreen,gameover);
-alien ALN12(CLK_25,rst,430,50,alien3X2,alien3Y2,30,alienalive12,rocketflying,rocketX,rocketY,hit12,alienfire5,100000000,(alienalive7 || alienalive2),startscreen,gameover);
-alien ALN13(CLK_25,rst,360,50,alien3X3,alien3Y3,30,alienalive13,rocketflying,rocketX,rocketY,hit13,0,150000000,0,startscreen,gameover);
-alien ALN14(CLK_25,rst,290,50,alien3X4,alien3Y4,30,alienalive14,rocketflying,rocketX,rocketY,hit14,alienfire6,100000000,(alienalive9 || alienalive4),startscreen,gameover);
-alien ALN15(CLK_25,rst,220,50,alien3X5,alien3Y5,30,alienalive15,rocketflying,rocketX,rocketY,hit15,0,150000000,0,startscreen,gameover);
+    rocket RKTSHIP(CLK_25, rst, spaceshipX, spaceshipY, rocketX, rocketY,
+        alienrocketX1, alienrocketY1, alienrocketX2, alienrocketY2, alienrocketX3, alienrocketY3,
+        alienrocketX4, alienrocketY4, alienrocketX5, alienrocketY5, alienrocketX6, alienrocketY6,
+        alienrocketflying1, alienrocketflying2, alienrocketflying3, alienrocketflying4,
+        alienrocketflying5, alienrocketflying6, 1, truefire, rocketflying, hit);
 
-Pulse PUL1(clk, rst, cleanL, pulseL);
-Pulse PUL2(clk, rst, cleanR, pulseR);
-Pulse PUL3(clk, rst, cleanfire, pulsefire);
-horizontal HSYNC(CLK_50,rst,haddr,VGA_hSync,Xdisplay);
-vertical VSYNC(CLK_50,rst,vaddr,VGA_vSync,Ydisplay);
+    rocket ALIENRKT1(CLK_25, rst, alienX1, alienY1, alienrocketX1, alienrocketY1, rocketX, rocketY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rocketflying, 0, 0, 0, 0, 0, 0, alienfire1, alienrocketflying1, alienhit);
+    rocket ALIENRKT2(CLK_25, rst, alienX5, alienY5, alienrocketX2, alienrocketY2, rocketX, rocketY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rocketflying, 0, 0, 0, 0, 0, 0, alienfire2, alienrocketflying2, alienhit);
+    rocket ALIENRKT3(CLK_25, rst, alien2X2, alien2Y2, alienrocketX3, alienrocketY3, rocketX, rocketY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rocketflying, 0, 0, 0, 0, 0, 0, alienfire3, alienrocketflying3, alienhit);
+    rocket ALIENRKT4(CLK_25, rst, alien2X4, alien2Y4, alienrocketX4, alienrocketY4, rocketX, rocketY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rocketflying, 0, 0, 0, 0, 0, 0, alienfire4, alienrocketflying4, alienhit);
+    rocket ALIENRKT5(CLK_25, rst, alien3X2, alien3Y2, alienrocketX5, alienrocketY5, rocketX, rocketY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rocketflying, 0, 0, 0, 0, 0, 0, alienfire5, alienrocketflying5, alienhit);
+    rocket ALIENRKT6(CLK_25, rst, alien3X4, alien3Y4, alienrocketX6, alienrocketY6, rocketX, rocketY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rocketflying, 0, 0, 0, 0, 0, 0, alienfire6, alienrocketflying6, alienhit);
 
-blk_mem_gen_0 MEMSPACE(CLK_25,1,0,ship_addr,0,space_dout);
-blk_mem_gen_1 MEMALIEN1(CLK_25,1,0,alien_addr,0,alien_dout);
-blk_mem_gen_2 MEMALIEN2(CLK_25,1,0,alien_addr,0,alien2_dout);
-blk_mem_gen_3 MEMALIEN3(CLK_25,1,0,alien_addr,0,alien3_dout);
-blk_mem_gen_4 BACKGND(CLK_25,1,0,backgroundaddr,0,background);
-blk_mem_gen_5 GAMEOVER(CLK_25,1,0,gameoveraddr,0,gameoverimg);
-blk_mem_gen_6 START(CLK_25,1,0,startaddr,0,startimg);
-blk_mem_gen_7 WIN(CLK_25,1,0,winaddr,0,winimg);
+    speaker SND(CLK_25, speaker, hit, alienhit);
 
-/************************************************/
-assign hit =    hit1 || hit2 || hit3 || hit4 || hit5 ||
-                hit6 || hit7 || hit8 || hit9 || hit10||
-                hit11 || hit12 || hit13 || hit14 || hit15;
-                
-assign alien1border =   alienborder1 || alienborder2 ||alienborder3 || alienborder4 || alienborder5;
-assign alien2border =   alienborder6 || alienborder7 ||alienborder8 || alienborder9 || alienborder10;
-assign alien3border =   alienborder11 || alienborder12 ||alienborder13 || alienborder14 || alienborder15;
+    alien ALN1(CLK_25, rst, 500, 150, alienX1, alienY1, 30, alienalive1, rocketflying, rocketX, rocketY, hit1, alienfire1, 100000000, 0, startscreen, gameover);
+    alien ALN2(CLK_25, rst, 430, 150, alienX2, alienY2, 30, alienalive2, rocketflying, rocketX, rocketY, hit2, 0, 150000000, 0, startscreen, gameover);
+    alien ALN3(CLK_25, rst, 360, 150, alienX3, alienY3, 30, alienalive3, rocketflying, rocketX, rocketY, hit3, 0, 150000000, 0, startscreen, gameover);
+    alien ALN4(CLK_25, rst, 290, 150, alienX4, alienY4, 30, alienalive4, rocketflying, rocketX, rocketY, hit4, 0, 150000000, 0, startscreen, gameover);
+    alien ALN5(CLK_25, rst, 220, 150, alienX5, alienY5, 30, alienalive5, rocketflying, rocketX, rocketY, hit5, alienfire2, 100000000, 0, startscreen, gameover);
+
+    alien ALN6(CLK_25, rst, 500, 98, alien2X1, alien2Y1, 30, alienalive6, rocketflying, rocketX, rocketY, hit6, 0, 150000000, 0, startscreen, gameover);
+    alien ALN7(CLK_25, rst, 430, 98, alien2X2, alien2Y2, 30, alienalive7, rocketflying, rocketX, rocketY, hit7, alienfire3, 100000000, alienalive2, startscreen, gameover);
+    alien ALN8(CLK_25, rst, 360, 98, alien2X3, alien2Y3, 30, alienalive8, rocketflying, rocketX, rocketY, hit8, 0, 150000000, 0, startscreen, gameover);
+    alien ALN9(CLK_25, rst, 290, 98, alien2X4, alien2Y4, 30, alienalive9, rocketflying, rocketX, rocketY, hit9, alienfire4, 100000000, alienalive4, startscreen, gameover);
+    alien ALN10(CLK_25, rst, 220, 98, alien2X5, alien2Y5, 30, alienalive10, rocketflying, rocketX, rocketY, hit10, 0, 150000000, 0, startscreen, gameover);
+
+    alien ALN11(CLK_25, rst, 500, 50, alien3X1, alien3Y1, 30, alienalive11, rocketflying, rocketX, rocketY, hit11, 0, 150000000, 0, startscreen, gameover);
+    alien ALN12(CLK_25, rst, 430, 50, alien3X2, alien3Y2, 30, alienalive12, rocketflying, rocketX, rocketY, hit12, alienfire5, 100000000, (alienalive7 || alienalive2), startscreen, gameover);
+    alien ALN13(CLK_25, rst, 360, 50, alien3X3, alien3Y3, 30, alienalive13, rocketflying, rocketX, rocketY, hit13, 0, 150000000, 0, startscreen, gameover);
+    alien ALN14(CLK_25, rst, 290, 50, alien3X4, alien3Y4, 30, alienalive14, rocketflying, rocketX, rocketY, hit14, alienfire6, 100000000, (alienalive9 || alienalive4), startscreen, gameover);
+    alien ALN15(CLK_25, rst, 220, 50, alien3X5, alien3Y5, 30, alienalive15, rocketflying, rocketX, rocketY, hit15, 0, 150000000, 0, startscreen, gameover);
+
+    Pulse PUL1(clk, rst, cleanL, pulseL);
+    Pulse PUL2(clk, rst, cleanR, pulseR);
+    Pulse PUL3(clk, rst, cleanfire, pulsefire);
+    horizontal HSYNC(CLK_50, rst, haddr, VGA_hSync, Xdisplay);
+    vertical VSYNC(CLK_50, rst, vaddr, VGA_vSync, Ydisplay);
+
+    blk_mem_gen_0 MEMSPACE (.clka(CLK_25), .ena(1'b1), .addra(ship_addr), .douta(space_dout));
+    blk_mem_gen_1 MEMALIEN1 (.clka(CLK_25), .ena(1'b1), .addra(alien_addr), .douta(alien_dout));
+    blk_mem_gen_2 MEMALIEN2 (.clka(CLK_25), .ena(1'b1), .addra(alien_addr), .douta(alien2_dout));
+    blk_mem_gen_3 MEMALIEN3 (.clka(CLK_25), .ena(1'b1), .addra(alien_addr), .douta(alien3_dout));
+
+    wire is_star = (haddr[2:0] == 3'b111) && (vaddr[2:0] == 3'b111) && ((haddr[7:3] ^ vaddr[8:4]) == 5'b10101);
+    assign background = is_star ? 8'b111_111_11 : 8'b000_000_00;
+
+    blk_mem_gen_5 GAMEOVER (.clka(CLK_25), .ena(1'b1), .addra(gameoveraddr), .douta(gameoverimg));
+    blk_mem_gen_6 START (.clka(CLK_25), .ena(1'b1), .addra(startaddr), .douta(startimg));
+    
+    assign winimg = 8'b00011100;
+
+    assign hit = hit1 || hit2 || hit3 || hit4 || hit5 ||
+                 hit6 || hit7 || hit8 || hit9 || hit10 ||
+                 hit11 || hit12 || hit13 || hit14 || hit15;
+                 
+    assign alien1border = alienborder1 || alienborder2 || alienborder3 || alienborder4 || alienborder5;
+    assign alien2border = alienborder6 || alienborder7 || alienborder8 || alienborder9 || alienborder10;
+    assign alien3border = alienborder11 || alienborder12 || alienborder13 || alienborder14 || alienborder15;
                         
-assign alien_addr = (alienborder1)? alien_addr1:
-                    (alienborder2)? alien_addr2:
-                    (alienborder3)? alien_addr3:
-                    (alienborder4)? alien_addr4:
-                    (alienborder5)? alien_addr5:
-                    (alienborder6)? alien_addr6:
-                    (alienborder7)? alien_addr7:
-                    (alienborder8)? alien_addr8:
-                    (alienborder9)? alien_addr9:
-                    (alienborder10)? alien_addr10:
-                    (alienborder11)? alien_addr11:
-                    (alienborder12)? alien_addr12:
-                    (alienborder13)? alien_addr13:
-                    (alienborder14)? alien_addr14:
-                    (alienborder15)? alien_addr15:
-                    0;
-                    
-assign ship_addr =  (shipborder)? space_addr : 
-                    (lifeborder)? life_addr : 0;
+    assign alien_addr = (alienborder1)? alien_addr1:
+                        (alienborder2)? alien_addr2:
+                        (alienborder3)? alien_addr3:
+                        (alienborder4)? alien_addr4:
+                        (alienborder5)? alien_addr5:
+                        (alienborder6)? alien_addr6:
+                        (alienborder7)? alien_addr7:
+                        (alienborder8)? alien_addr8:
+                        (alienborder9)? alien_addr9:
+                        (alienborder10)? alien_addr10:
+                        (alienborder11)? alien_addr11:
+                        (alienborder12)? alien_addr12:
+                        (alienborder13)? alien_addr13:
+                        (alienborder14)? alien_addr14:
+                        (alienborder15)? alien_addr15:
+                        0;
+                        
+    assign ship_addr = (shipborder)? space_addr : 
+                       (lifeborder)? life_addr : 0;
 
-assign gameover =   (alienalive1 && alienY1 >= spaceshipY - 22) ||
-                    (alienalive2 && alienY2 >= spaceshipY - 22) ||
-                    (alienalive3 && alienY3 >= spaceshipY - 22) ||
-                    (alienalive4 && alienY4 >= spaceshipY - 22) ||
-                    (alienalive5 && alienY5 >= spaceshipY - 22) ||
-                    (alienalive6 && alien2Y1 >= spaceshipY - 30) ||
-                    (alienalive7 && alien2Y2 >= spaceshipY - 30) ||
-                    (alienalive8 && alien2Y3 >= spaceshipY - 30) ||
-                    (alienalive9 && alien2Y4 >= spaceshipY - 30) ||
-                    (alienalive10 && alien2Y5 >= spaceshipY - 30) ||
-                    (alienalive11 && alien3Y1 >= spaceshipY - 22) ||
-                    (alienalive12 && alien3Y2 >= spaceshipY - 22) ||
-                    (alienalive13 && alien3Y3 >= spaceshipY - 22) ||
-                    (alienalive14 && alien3Y4 >= spaceshipY - 22) ||
-                    (alienalive15 && alien3Y5 >= spaceshipY - 22);
-                         
-assign truefire = (startscreen)? 0 : pulsefire;
-assign truepulseL = (startscreen)? 0 : pulseL;
-assign truepulseR = (startscreen)? 0 : pulseR;
-assign totalgameover = (gameover) || (livesgameover);
-/***********CLK DIVIDER**************************/
-always@(posedge clk or posedge rst)
-begin
-    if(rst)
-    begin
-        CLK_50 <= 0;
-    end
-    else begin
-        CLK_50 <= ~CLK_50;
-    end
-end
-/************************************************/
-always@(posedge CLK_50 or posedge rst)
-begin
-    if(rst)
-    begin
-        CLK_25 <= 0;
-    end
-    else begin
-        CLK_25 <= ~CLK_25;
-    end
-end
-/************************************************/
-/*****************RGB OUTPUT*********************/
-always@(posedge CLK_50)
-	begin
-		VGA_R 	<= {0,R};
-		VGA_G 	<= {0,G};
-		VGA_B 	<= {B};
-	end 
-/************************************************/
+    assign gameover = (alienalive1 && alienY1 >= spaceshipY - 22) ||
+                      (alienalive2 && alienY2 >= spaceshipY - 22) ||
+                      (alienalive3 && alienY3 >= spaceshipY - 22) ||
+                      (alienalive4 && alienY4 >= spaceshipY - 22) ||
+                      (alienalive5 && alienY5 >= spaceshipY - 22) ||
+                      (alienalive6 && alien2Y1 >= spaceshipY - 30) ||
+                      (alienalive7 && alien2Y2 >= spaceshipY - 30) ||
+                      (alienalive8 && alien2Y3 >= spaceshipY - 30) ||
+                      (alienalive9 && alien2Y4 >= spaceshipY - 30) ||
+                      (alienalive10 && alien2Y5 >= spaceshipY - 30) ||
+                      (alienalive11 && alien3Y1 >= spaceshipY - 22) ||
+                      (alienalive12 && alien3Y2 >= spaceshipY - 22) ||
+                      (alienalive13 && alien3Y3 >= spaceshipY - 22) ||
+                      (alienalive14 && alien3Y4 >= spaceshipY - 22) ||
+                      (alienalive15 && alien3Y5 >= spaceshipY - 22);
+                             
+    assign truefire = (startscreen)? 0 : pulsefire;
+    assign truepulseL = (startscreen)? 0 : pulseL;
+    assign truepulseR = (startscreen)? 0 : pulseR;
+    assign totalgameover = (gameover) || (livesgameover);
 
-always@(posedge CLK_50 or posedge rst)
-begin
-    if(rst)
-    begin
-        startscreen <= 1;
-    end else begin
-        if(startscreen) begin
-            if(startbtn) begin
-                startscreen <= 0;
-            end
+    always@(posedge clk or posedge rst) begin
+        if(rst) CLK_50 <= 0;
+        else CLK_50 <= ~CLK_50;
+    end
+
+    always@(posedge CLK_50 or posedge rst) begin
+        if(rst) CLK_25 <= 0;
+        else CLK_25 <= ~CLK_25;
+    end
+
+    always@(posedge CLK_50) begin
+        VGA_R <= {0,R};
+        VGA_G <= {0,G};
+        VGA_B <= {B};
+    end 
+
+    always@(posedge CLK_50 or posedge rst) begin
+        if(rst) startscreen <= 1;
+        else if(startscreen && startbtn) startscreen <= 0;
+    end
+
+    always@(posedge CLK_50) begin
+        if(Xdisplay && Ydisplay) begin
+            R <= (startscreen)? startimg[7:5]:
+                 (totalgameover)? gameoverimg[7:5]:
+                 (winscreen)? winimg[7:5]:
+                 (scorecase)? 7 :
+                 (scoreborder)? 7 :
+                 (alien3border)? alien3_dout[7:5]:
+                 (alien2border)? alien2_dout[7:5]:
+                 (alien1border)? alien_dout[7:5]:
+                 (rocketborder)? 7:
+                 (alienrocketborder1)? 7:
+                 (alienrocketborder2)? 7:
+                 (alienrocketborder3)? 7:
+                 (alienrocketborder4)? 7:
+                 (alienrocketborder5)? 7:
+                 (alienrocketborder6)? 7:
+                 (shipborder)? space_dout[7:5] :
+                 (lifeborder)? space_dout[7:5] :
+                 (border)? 0 : background[7:5];
+            
+            G <= (startscreen)? startimg[4:2]:
+                 (totalgameover)? gameoverimg[4:2]:
+                 (winscreen)? winimg[4:2]:
+                 (scorecase)? 7 :
+                 (scoreborder)? 0 :
+                 (alien3border)? alien3_dout[4:2]:
+                 (alien2border)? alien2_dout[4:2]:
+                 (alien1border)? alien_dout[4:2]:
+                 (rocketborder)? 7: 
+                 (alienrocketborder1)? 0:
+                 (alienrocketborder2)? 0:
+                 (alienrocketborder3)? 0:
+                 (alienrocketborder4)? 0:
+                 (alienrocketborder5)? 0:
+                 (alienrocketborder6)? 0:
+                 (shipborder)? space_dout[4:2] :
+                 (lifeborder)? space_dout[4:2] :
+                 (border)? 5 : background[4:2];
+            
+            B <= (startscreen)? startimg[1:0]:
+                 (totalgameover)? gameoverimg[1:0]:
+                 (winscreen)? winimg[1:0]:
+                 (scorecase)? 7 :
+                 (scoreborder)? 0 :
+                 (alien3border)? alien3_dout[1:0]:
+                 (alien2border)? alien2_dout[1:0]:
+                 (alien1border)? alien_dout[1:0]:
+                 (alienrocketborder1)? 0:
+                 (alienrocketborder2)? 0:
+                 (alienrocketborder3)? 0:
+                 (alienrocketborder4)? 0:
+                 (alienrocketborder5)? 0:
+                 (alienrocketborder6)? 0:
+                 (shipborder)? space_dout[1:0] :
+                 (lifeborder)? space_dout[1:0] :
+                 (border)? 0 : background[1:0];
+        end else begin
+            R <= 0;
+            B <= 0;
+            G <= 0;
         end
     end
-end
 
-always@(posedge CLK_50)
-begin
-    if(Xdisplay && Ydisplay)
-    begin
-        R <=    (startscreen)? startimg[7:5]:
-                (totalgameover)? gameoverimg[7:5]:
-                (winscreen)? winimg[7:5]:
-                (scorecase)     ? 7 :
-                (scoreborder)   ? 7 :
-                (alien3border)  ? alien3_dout[7:5]:
-                (alien2border) ? alien2_dout[7:5]:
-                (alien1border) ? alien_dout[7:5]:
-                (rocketborder) ? 7:
-                (alienrocketborder1) ? 7:
-                (alienrocketborder2) ? 7:
-                (alienrocketborder3) ? 7:
-                (alienrocketborder4) ? 7:
-                (alienrocketborder5) ? 7:
-                (alienrocketborder6) ? 7:
-                (shipborder)   ? space_dout[7:5] :
-                (lifeborder)   ? space_dout[7:5] :
-                (border)       ? 0:background[7:5];
-        G <=    (startscreen)? startimg[4:2]:
-                (totalgameover)? gameoverimg[4:2]:
-                (winscreen)? winimg[4:2]:
-                (scorecase)     ? 7 :
-                (scoreborder)   ? 0 :
-                (alien3border)  ? alien3_dout[4:2]:
-                (alien2border) ? alien2_dout[4:2]:
-                (alien1border) ? alien_dout[4:2]:
-                (rocketborder) ? 7: 
-                (alienrocketborder1) ? 0:
-                (alienrocketborder2) ? 0:
-                (alienrocketborder3) ? 0:
-                (alienrocketborder4) ? 0:
-                (alienrocketborder5) ? 0:
-                (alienrocketborder6) ? 0:
-                (shipborder)   ? space_dout[4:2] :
-                (lifeborder)   ? space_dout[4:2] :
-                (border)       ? 5:background[4:2];
-        B <=    (startscreen)? startimg[1:0]:
-                (totalgameover)? gameoverimg[1:0]:
-                (winscreen)? winimg[1:0]:
-                (scorecase)     ? 7 :
-                (scoreborder)   ? 0 :
-                (alien3border)  ? alien3_dout[1:0]:
-                (alien2border) ? alien2_dout[1:0]:
-                (alien1border) ? alien_dout[1:0]:
-                (alienrocketborder1) ? 0:
-                (alienrocketborder2) ? 0:
-                (alienrocketborder3) ? 0:
-                (alienrocketborder4) ? 0:
-                (alienrocketborder5) ? 0:
-                (alienrocketborder6) ? 0:
-                (shipborder)   ? space_dout[1:0] :
-                (lifeborder)   ? space_dout[1:0] :
-                (border)       ? 0:background[1:0];
-    end else begin
-        R <= 0;
-        B <= 0;
-        G <= 0;
+    always@(posedge CLK_25 or posedge rst) begin
+        if(rst) begin
+            points <= 0;
+            winscreen <= 0;
+            livesgameover <=0 ;
+            lives <= 0;
+        end else begin
+            points <= (hit1 || hit2 || hit3 || hit4 || hit5) ? points + 3 :
+                      (hit6 || hit7 || hit8 || hit9 || hit10) ? points + 6 :
+                      (hit11 || hit12 || hit13 || hit14 || hit15) ? points + 9 : 
+                      points;
+            lives <= (liveminus) ? lives + 1 : lives;
+            livesgameover <= (lives > 3) ? 1 : 0;
+            winscreen <= (points == 90) ? 1 : 0;
+        end
     end
-end
 
-always@(posedge CLK_25 or posedge rst)
-begin
-    if(rst)
-    begin
-        points <= 0;
-        winscreen <= 0;
-        livesgameover <=0 ;
-        lives <= 0;
-    end else begin
-        points <=   (hit1 || hit2 || hit3 || hit4 || hit5) ? points + 3 :
-                    (hit6 || hit7 || hit8 || hit9 || hit10) ? points + 6 :
-                    (hit11 || hit12 || hit13 || hit14 || hit15) ? points + 9 : 
-                    points;
-        lives <= (liveminus) ? lives + 1 : lives;
-        livesgameover <= (lives > 3) ? 1 : 0;
-        winscreen <= (points == 90) ? 1 : 0;
+    always@(posedge CLK_25 or posedge rst) begin
+        if(rst) begin
+            backgroundaddr <= 0;
+            gameoveraddr <= 0;
+            winaddr <= 0;
+            space_addr <= 0;
+            life_addr <= 0;
+            alien_addr1 <= 0; alien_addr2 <= 0; alien_addr3 <= 0; alien_addr4 <= 0; alien_addr5 <= 0;
+            alien_addr6 <= 0; alien_addr7 <= 0; alien_addr8 <= 0; alien_addr9 <= 0; alien_addr10 <= 0;
+            alien_addr11 <= 0; alien_addr12 <= 0; alien_addr13 <= 0; alien_addr14 <= 0; alien_addr15 <= 0;    
+        end else begin
+            startaddr <= (vaddr <= 365 )? (startborder ? (startaddr + 1'b1): startaddr) : 0;
+            backgroundaddr <= (vaddr >= 30 && vaddr <= 470)? (backgroundaddr + 1'b1) : 0;
+            gameoveraddr <= (vaddr <= 264 )? (gameoverborder ? (gameoveraddr + 1'b1): gameoveraddr) : 0;
+            winaddr <= (vaddr <= 320 )? (winborder ? (winaddr + 1'b1): winaddr) : 0;
+            space_addr <= (vaddr == spaceshipY + 16)? 0 : ((shipborder)? (space_addr +  1'b1) : (space_addr));
+            life_addr <= (vaddr == 38)? 0 : ((lifeborder)? (life_addr +  1'b1) : (life_addr));
+            alien_addr1 <= (vaddr == alienY1 + 22)? 0 : ((alienborder1)? (alien_addr1 +  1'b1) : (alien_addr1));
+            alien_addr2 <= (vaddr == alienY2 + 22)? 0 : ((alienborder2)? (alien_addr2 +  1'b1) : (alien_addr2));
+            alien_addr3 <= (vaddr == alienY3 + 22)? 0 : ((alienborder3)? (alien_addr3 +  1'b1) : (alien_addr3));
+            alien_addr4 <= (vaddr == alienY4 + 22)? 0 : ((alienborder4)? (alien_addr4 +  1'b1) : (alien_addr4));
+            alien_addr5 <= (vaddr == alienY5 + 22)? 0 : ((alienborder5)? (alien_addr5 +  1'b1) : (alien_addr5));
+            alien_addr6 <= (vaddr == alien2Y1 + 30)? 0 : ((alienborder6)? (alien_addr6 +  1'b1) : (alien_addr6));
+            alien_addr7 <= (vaddr == alien2Y2 + 30)? 0 : ((alienborder7)? (alien_addr7 +  1'b1) : (alien_addr7));
+            alien_addr8 <= (vaddr == alien2Y3 + 30)? 0 : ((alienborder8)? (alien_addr8 +  1'b1) : (alien_addr8));
+            alien_addr9 <= (vaddr == alien2Y4 + 30)? 0 : ((alienborder9)? (alien_addr9 +  1'b1) : (alien_addr9));
+            alien_addr10 <= (vaddr == alien2Y5 + 30)? 0 : ((alienborder10)? (alien_addr10 +  1'b1) : (alien_addr10));
+            alien_addr11 <= (vaddr == alien3Y1 + 22)? 0 : ((alienborder11)? (alien_addr11 +  1'b1) : (alien_addr11));
+            alien_addr12 <= (vaddr == alien3Y2 + 22)? 0 : ((alienborder12)? (alien_addr12 +  1'b1) : (alien_addr12));
+            alien_addr13 <= (vaddr == alien3Y3 + 22)? 0 : ((alienborder13)? (alien_addr13 +  1'b1) : (alien_addr13));
+            alien_addr14 <= (vaddr == alien3Y4 + 22)? 0 : ((alienborder14)? (alien_addr14 +  1'b1) : (alien_addr14));
+            alien_addr15 <= (vaddr == alien3Y5 + 22)? 0 : ((alienborder15)? (alien_addr15 +  1'b1) : (alien_addr15));
+        end
     end
-end
 
-always@(posedge CLK_25 or posedge rst)
-begin
-    if(rst)
-    begin
-        backgroundaddr <= 0;
-        gameoveraddr <= 0;
-        winaddr <= 0;
-        space_addr <= 0;
-        life_addr <= 0;
-        alien_addr1 <= 0;
-        alien_addr2 <= 0;
-        alien_addr3 <= 0;
-        alien_addr4 <= 0;
-        alien_addr5 <= 0;
-        alien_addr6 <= 0;
-        alien_addr7 <= 0;
-        alien_addr8 <= 0;
-        alien_addr9 <= 0;
-        alien_addr10 <= 0;
-        alien_addr11 <= 0;
-        alien_addr12 <= 0;
-        alien_addr13 <= 0;
-        alien_addr14 <= 0;
-        alien_addr15 <= 0;    
-    end else
-    begin
-        startaddr <= (vaddr <= 365 )? (startborder ? (startaddr + 1'b1): startaddr) : 0;
-        backgroundaddr <= (vaddr >= 30 && vaddr <= 470)? (backgroundaddr + 1'b1) : 0;
-        gameoveraddr <= (vaddr <= 264 )? (gameoverborder ? (gameoveraddr + 1'b1): gameoveraddr) : 0;
-        winaddr <= (vaddr <= 320 )? (winborder ? (winaddr + 1'b1): winaddr) : 0;
-        space_addr <= (vaddr == spaceshipY + 16)? 0 : ((shipborder)? (space_addr +  1'b1) : (space_addr));
-        life_addr <= (vaddr == 38)? 0 : ((lifeborder)? (life_addr +  1'b1) : (life_addr));
-        alien_addr1 <= (vaddr == alienY1 + 22)? 0 : ((alienborder1)? (alien_addr1 +  1'b1) : (alien_addr1));
-        alien_addr2 <= (vaddr == alienY2 + 22)? 0 : ((alienborder2)? (alien_addr2 +  1'b1) : (alien_addr2));
-        alien_addr3 <= (vaddr == alienY3 + 22)? 0 : ((alienborder3)? (alien_addr3 +  1'b1) : (alien_addr3));
-        alien_addr4 <= (vaddr == alienY4 + 22)? 0 : ((alienborder4)? (alien_addr4 +  1'b1) : (alien_addr4));
-        alien_addr5 <= (vaddr == alienY5 + 22)? 0 : ((alienborder5)? (alien_addr5 +  1'b1) : (alien_addr5));
-        alien_addr6 <= (vaddr == alien2Y1 + 30)? 0 : ((alienborder6)? (alien_addr6 +  1'b1) : (alien_addr6));
-        alien_addr7 <= (vaddr == alien2Y2 + 30)? 0 : ((alienborder7)? (alien_addr7 +  1'b1) : (alien_addr7));
-        alien_addr8 <= (vaddr == alien2Y3 + 30)? 0 : ((alienborder8)? (alien_addr8 +  1'b1) : (alien_addr8));
-        alien_addr9 <= (vaddr == alien2Y4 + 30)? 0 : ((alienborder9)? (alien_addr9 +  1'b1) : (alien_addr9));
-        alien_addr10 <= (vaddr == alien2Y5 + 30)? 0 : ((alienborder10)? (alien_addr10 +  1'b1) : (alien_addr10));
-        alien_addr11 <= (vaddr == alien3Y1 + 22)? 0 : ((alienborder11)? (alien_addr11 +  1'b1) : (alien_addr11));
-        alien_addr12 <= (vaddr == alien3Y2 + 22)? 0 : ((alienborder12)? (alien_addr12 +  1'b1) : (alien_addr12));
-        alien_addr13 <= (vaddr == alien3Y3 + 22)? 0 : ((alienborder13)? (alien_addr13 +  1'b1) : (alien_addr13));
-        alien_addr14 <= (vaddr == alien3Y4 + 22)? 0 : ((alienborder14)? (alien_addr14 +  1'b1) : (alien_addr14));
-        alien_addr15 <= (vaddr == alien3Y5 + 22)? 0 : ((alienborder15)? (alien_addr15 +  1'b1) : (alien_addr15));
-    end
-end
-
-
-always @(posedge CLK_50)
-	begin
-        scorecase <= (  ((haddr >= 9 && haddr <= 101)    && (vaddr >= 23 && vaddr <= 24)) ||
-                        ((haddr >= 9 && haddr <= 101)    && (vaddr >= 31 && vaddr <= 32)) ||
-                        ((haddr >= 9 && haddr <= 10)     && (vaddr >= 23 && vaddr <= 32)) ||
-                        ((haddr >= 100 && haddr <= 101)   && (vaddr >= 23 && vaddr <= 32)));
+    always @(posedge CLK_50) begin
+        scorecase <= (((haddr >= 9 && haddr <= 101) && (vaddr >= 23 && vaddr <= 24)) ||
+                      ((haddr >= 9 && haddr <= 101) && (vaddr >= 31 && vaddr <= 32)) ||
+                      ((haddr >= 9 && haddr <= 10)  && (vaddr >= 23 && vaddr <= 32)) ||
+                      ((haddr >= 100 && haddr <= 101) && (vaddr >= 23 && vaddr <= 32)));
         scoreborder <= (((haddr >= 10) && (haddr <= 9 + points)) && ((vaddr >= 25) && (vaddr <= 30) ));
         startborder <= (startscreen) && (((haddr >= 70 ) && (haddr <= 569)) && ((vaddr >= 115) && (vaddr <= 364)));
         border <= (((vaddr >= 0) && (vaddr <= 5)) || ((vaddr >= 474) && (vaddr <= 479)) || ((haddr >= 0) && (haddr <= 5)) || ((haddr >= 634) && (haddr <= 639)));
@@ -389,9 +393,8 @@ always @(posedge CLK_50)
         alienborder13 <= (alienalive13)&&(((haddr >= alien3X3 ) && (haddr <= alien3X3 + 32)) && ((vaddr >= alien3Y3) && (vaddr <= alien3Y3 + 21)));
         alienborder14 <= (alienalive14)&&(((haddr >= alien3X4 ) && (haddr <= alien3X4 + 32)) && ((vaddr >= alien3Y4) && (vaddr <= alien3Y4 + 21)));
         alienborder15 <= (alienalive15)&&(((haddr >= alien3X5 ) && (haddr <= alien3X5 + 32)) && ((vaddr >= alien3Y5) && (vaddr <= alien3Y5 + 21)));
-	end
+    end
 endmodule
-
 module spaceship
     (spaceshipX,spaceshipY,btnL,btnR,clk,rst,
     alienrocketX1,alienrocketY1,
@@ -714,7 +717,6 @@ module Pulse(input clk, input rst, input level, output reg pulse);
    parameter S0 = 2'b00;
    parameter S1 = 2'b01;
    
-   // Compute next state of the FSM 
   always @(posedge clk)
       begin
 			case(state)
@@ -749,7 +751,6 @@ module Pulse(input clk, input rst, input level, output reg pulse);
 			endcase
       end
 	  
-	  // Set the new state 
 	always @(posedge clk, posedge rst)
 			begin
 				if(rst == 1'b1)
